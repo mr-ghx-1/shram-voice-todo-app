@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: 2024 LiveKit, Inc.
-//
-// SPDX-License-Identifier: Apache-2.0
 import {
   type JobContext,
   type JobProcess,
@@ -11,7 +8,7 @@ import {
   pipeline,
 } from '@livekit/agents';
 import * as deepgram from '@livekit/agents-plugin-deepgram';
-import * as elevenlabs from '@livekit/agents-plugin-elevenlabs';
+import * as cartesia from '@livekit/agents-plugin-cartesia';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
 import dotenv from 'dotenv';
@@ -32,15 +29,16 @@ export default defineAgent({
     const initialContext = new llm.ChatContext().append({
       role: llm.ChatRole.SYSTEM,
       text:
-        'You are a voice assistant created by LiveKit. Your interface with users will be voice. ' +
-        'You should use short and concise responses, and avoiding usage of unpronounceable ' +
-        'punctuation.',
+        'You are a helpful voice AI assistant. ' +
+        'You eagerly assist users with their questions by providing information from your extensive knowledge. ' +
+        'Your responses are concise, to the point, and without any complex formatting or punctuation. ' +
+        'You are curious, friendly, and have a sense of humor.',
     });
 
     await ctx.connect();
     console.log('waiting for participant');
     const participant = await ctx.waitForParticipant();
-    console.log(`starting assistant example agent for ${participant.identity}`);
+    console.log(`starting assistant agent for ${participant.identity}`);
 
     const fncCtx: llm.FunctionContext = {
       weather: {
@@ -62,14 +60,12 @@ export default defineAgent({
 
     const agent = new pipeline.VoicePipelineAgent(
       vad,
-      new deepgram.STT(),
-      new openai.LLM(),
-      new elevenlabs.TTS(),
+      new deepgram.STT({ model: 'nova-3-general', language: 'en-US' }),
+      new openai.LLM({ model: 'gpt-4o-mini' }),
+      new cartesia.TTS({ voice: '6f84f4b8-58a2-430c-8c79-688dad597532' }),
       { chatCtx: initialContext, fncCtx },
     );
     agent.start(ctx.room, participant);
-
-    await agent.say('Hey, how can I help you today', true);
   },
 });
 

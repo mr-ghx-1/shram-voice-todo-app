@@ -11,12 +11,12 @@ importers:
       '@livekit/agents':
         specifier: ^0.7.8
         version: 0.7.8(@livekit/rtc-node@0.13.18)
+      '@livekit/agents-plugin-cartesia':
+        specifier: ^0.1.4
+        version: 0.1.4(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)
       '@livekit/agents-plugin-deepgram':
         specifier: ^0.5.7
         version: 0.5.7(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)
-      '@livekit/agents-plugin-elevenlabs':
-        specifier: ^0.6.3
-        version: 0.6.3(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)
       '@livekit/agents-plugin-openai':
         specifier: ^0.9.3
         version: 0.9.3(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)(zod@3.25.76)
@@ -266,14 +266,14 @@ packages:
   '@jridgewell/trace-mapping@0.3.29':
     resolution: {integrity: sha512-uw6guiW/gcAGPDhLmd77/6lW8QLeiV5RUTsAX46Db6oLhGaVj4lhnPwb184s1bkc8kdVg/+h988dro8GRDpmYQ==}
 
-  '@livekit/agents-plugin-deepgram@0.5.7':
-    resolution: {integrity: sha512-pIDqR+J3g9DAkaEHcdncnVGSl+IclUcuncZvphWcS+cy5O+Ika+aCPCT6jHtKU9VkZAHcclmi3JFpOwODm1PPA==}
+  '@livekit/agents-plugin-cartesia@0.1.4':
+    resolution: {integrity: sha512-0gun7auTKTk/oKP7GpR6HiWGC8QPPcPLsBzuVnGbK/PWr9vf6PWsl0IxxWcB5vCR3CuXdGXYJtrRh9vxlMkqvA==}
     peerDependencies:
       '@livekit/agents': ^0.7.7x
       '@livekit/rtc-node': ^0.13.11
 
-  '@livekit/agents-plugin-elevenlabs@0.6.3':
-    resolution: {integrity: sha512-l9bBCnn9VMgwVHJDilpf7dgnKz3QykoxPkBshFKCWj4apltM/XAtXK5FJJqdzTHJNNaWyEz4OyMCy4lGIR1kmw==}
+  '@livekit/agents-plugin-deepgram@0.5.7':
+    resolution: {integrity: sha512-pIDqR+J3g9DAkaEHcdncnVGSl+IclUcuncZvphWcS+cy5O+Ika+aCPCT6jHtKU9VkZAHcclmi3JFpOwODm1PPA==}
     peerDependencies:
       '@livekit/agents': ^0.7.7x
       '@livekit/rtc-node': ^0.13.11
@@ -1935,7 +1935,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.4
 
-  '@livekit/agents-plugin-deepgram@0.5.7(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)':
+  '@livekit/agents-plugin-cartesia@0.1.4(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)':
     dependencies:
       '@livekit/agents': 0.7.8(@livekit/rtc-node@0.13.18)
       '@livekit/rtc-node': 0.13.18
@@ -1944,7 +1944,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@livekit/agents-plugin-elevenlabs@0.6.3(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)':
+  '@livekit/agents-plugin-deepgram@0.5.7(@livekit/agents@0.7.8(@livekit/rtc-node@0.13.18))(@livekit/rtc-node@0.13.18)':
     dependencies:
       '@livekit/agents': 0.7.8(@livekit/rtc-node@0.13.18)
       '@livekit/rtc-node': 0.13.18

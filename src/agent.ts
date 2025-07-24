@@ -7,8 +7,8 @@ import {
   llm,
   pipeline,
 } from '@livekit/agents';
-import * as deepgram from '@livekit/agents-plugin-deepgram';
 import * as cartesia from '@livekit/agents-plugin-cartesia';
+import * as deepgram from '@livekit/agents-plugin-deepgram';
 import * as openai from '@livekit/agents-plugin-openai';
 import * as silero from '@livekit/agents-plugin-silero';
 import dotenv from 'dotenv';

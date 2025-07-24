@@ -6,6 +6,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint -f unix \"**/*.ts\"",
+    "format": "prettier --write \"**/*.ts\"",
+    "lint:fix": "eslint --fix \"**/*.ts\"",
     "download-files": "npm run build && node dist/agent.js download-files",
     "dev": "npm run build && node dist/agent.js dev",
     "start": "npm run build && node dist/agent.js start"

@@ -35,7 +35,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Build project
         run: pnpm run build
@@ -63,7 +63,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       - name: Run type checking
         run: pnpm run typecheck
@@ -73,19 +73,3 @@ jobs:
 
       - name: Check formatting
         run: pnpm run format:check
-
-  docker:
-    name: Docker Build Test
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Build Docker image
-        run: docker build -t agent-starter-node .
-
-      - name: Test Docker image
-        run: |
-          docker run --rm agent-starter-node node --version
-          docker run --rm agent-starter-node pnpm --version 

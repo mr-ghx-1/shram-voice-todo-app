@@ -185,3 +185,21 @@ docs
 
 # direnv
 .direnv
+
+# Security and audit files
+security-audit.json
+audit-report.json
+
+# IDE and editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+
+# Build info and cache
+*.tsbuildinfo
+.eslintcache

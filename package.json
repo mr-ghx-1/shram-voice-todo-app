@@ -5,14 +5,23 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "lint": "eslint -f unix \"**/*.ts\"",
-    "format": "prettier --write \"**/*.ts\"",
-    "lint:fix": "eslint --fix \"**/*.ts\"",
-    "download-files": "npm run build && node dist/agent.js download-files",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"**/*.{ts,js}\"",
+    "lint:fix": "eslint --fix \"**/*.{ts,js}\"",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
     "dev": "npm run build && node dist/agent.js dev",
-    "start": "npm run build && node dist/agent.js start"
+    "start": "npm run build && node dist/agent.js start",
+    "test": "node --test",
+    "test:watch": "node --test --watch",
   },
   "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=18.17.0",
+    "pnpm": ">=8.0.0"
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.32.0",
@@ -23,7 +32,8 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@types/node": "^22.16.5"
   },
   "dependencies": {
     "@livekit/agents": "^0.7.9",

@@ -12,10 +12,11 @@
     "lint:fix": "eslint --fix \"**/*.{ts,js}\"",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
-    "dev": "npm run build && node dist/agent.js dev",
-    "start": "npm run build && node dist/agent.js start",
+    "start": "pnpm run build && node dist/agent.js start",
     "test": "node --test",
-    "test:watch": "node --test --watch"
+    "test:watch": "node --test --watch",
+    "dev": "pnpm run build && node dist/agent.js dev",
+    "download-files": "pnpm run build && node dist/agent.js download-files"
   },
   "packageManager": "pnpm@10.15.0",
   "engines": {

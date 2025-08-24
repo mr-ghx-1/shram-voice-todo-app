@@ -42,6 +42,14 @@
     "@livekit/agents-plugin-openai": "next",
     "@livekit/agents-plugin-silero": "next",
     "@livekit/noise-cancellation-node": "0.x",
-    "dotenv": "^17.0.0"
+    "dotenv": "^17.0.0",
+    "onnxruntime-node": "1.21.1",
+    "zod": "^4.1.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "onnxruntime-node": "1.21.1",
+      "@huggingface/transformers>onnxruntime-node": "1.21.1"
+    }
   }
 }

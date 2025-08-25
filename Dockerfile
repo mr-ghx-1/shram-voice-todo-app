@@ -50,7 +50,7 @@ RUN adduser \
     appuser
 
 # Create cache directory and set proper permissions
-RUN mkdir -p /app/.cache && chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 USER appuser
 
 # Pre-download any ML models or files the agent needs

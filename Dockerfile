@@ -38,14 +38,6 @@ COPY . .
 # Build the project
 RUN pnpm exec tsc
 
-# Remove development-only dependencies to reduce the runtime image size
-RUN pnpm prune --prod
-
-# Pre-download any ML models or files the agent needs
-# This ensures the container is ready to run immediately without downloading
-# dependencies at runtime, which improves startup time and reliability
-RUN pnpm exec node dist/agent.js download-files
-
 # Create a non-privileged user that the app will run under
 # See https://docs.docker.com/develop/develop-images/dockerfile_best_practices/#user
 ARG UID=10001
@@ -57,8 +49,18 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-# Ensure ownership of app files and drop privileges for better security
+# Set proper permissions
 RUN chown -R appuser:appuser /app
+USER appuser
+
+# Pre-download any ML models or files the agent needs
+# This ensures the container is ready to run immediately without downloading
+# dependencies at runtime, which improves startup time and reliability
+RUN pnpm exec node dist/agent.js download-files
+
+# Switch back to root to remove dev dependencies and finalize setup
+USER root
+RUN pnpm prune --prod && chown -R appuser:appuser /app
 USER appuser
 
 # Set Node.js to production mode

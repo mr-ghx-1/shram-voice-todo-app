@@ -4,6 +4,7 @@ import {
   WorkerOptions,
   cli,
   defineAgent,
+  llm,
   voice,
 } from '@livekit/agents';
 import * as cartesia from '@livekit/agents-plugin-cartesia';
@@ -14,8 +15,27 @@ import * as silero from '@livekit/agents-plugin-silero';
 import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
+import { z } from 'zod';
 
 dotenv.config({ path: '.env.local' });
+
+const getWeather = llm.tool({
+  description: 'Get the weather for a given location',
+  parameters: z.object({
+    location: z.string(),
+  }),
+  execute: async ({ location }) => {
+    return {
+      location,
+      temperature_F: 70,
+      humidity: 50,
+      wind_mph: 10,
+      wind_direction: 'N',
+      wind_gust_mph: 15,
+      wind_gust_direction: 'N',
+    };
+  },
+});
 
 export default defineAgent({
   prewarm: async (proc: JobProcess) => {
@@ -26,6 +46,9 @@ export default defineAgent({
 
     const assistant = new voice.Agent({
       instructions: 'You are a helpful voice AI assistant.',
+      tools: {
+        getWeather,
+      },
     });
 
     const session = new voice.AgentSession({

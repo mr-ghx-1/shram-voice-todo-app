@@ -49,7 +49,7 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 
-# Create cache directory and set proper permissions
+# Set proper permissions
 RUN chown -R appuser:appuser /app
 USER appuser
 

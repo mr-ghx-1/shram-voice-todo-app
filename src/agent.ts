@@ -5,7 +5,6 @@ import {
   cli,
   defineAgent,
   llm,
-  log,
   metrics,
   voice,
 } from '@livekit/agents';

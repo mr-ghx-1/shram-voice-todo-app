@@ -23,16 +23,16 @@
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.0.0",
-    "@eslint/js": "^9.0.0",
-    "@trivago/prettier-plugin-sort-imports": "^5.0.0",
-    "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "eslint": "^8.0.0",
-    "eslint-config-prettier": "^9.0.0",
-    "eslint-plugin-import": "^2.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "typescript": "^5.0.0"
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.34.0",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/node": "^22.18.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@livekit/agents": "next",
@@ -41,8 +41,8 @@
     "@livekit/agents-plugin-livekit": "next",
     "@livekit/agents-plugin-openai": "next",
     "@livekit/agents-plugin-silero": "next",
-    "@livekit/noise-cancellation-node": "0.x",
-    "dotenv": "^17.0.0",
-    "zod": "^3.23.8"
+    "@livekit/noise-cancellation-node": "~0.1.9",
+    "dotenv": "^17.2.1",
+    "zod": "^3.25.76"
   }
 }

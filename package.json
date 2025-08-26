@@ -5,18 +5,17 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "build:watch": "tsc --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{ts,js}\"",
     "lint:fix": "eslint --fix \"**/*.{ts,js}\"",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
-    "test": "node --test",
-    "test:watch": "node --test --watch",
+    "test": "node --test --import tsx",
+    "test:watch": "node --test --watch --import tsx",
+    "dev": "tsx src/agent.ts dev",
     "download-files": "pnpm run build && node dist/agent.js download-files",
-    "dev": "pnpm run build && node dist/agent.js dev",
-    "start": "pnpm run build && node dist/agent.js start"
+    "start": "node dist/agent.js start"
   },
   "engines": {
     "node": ">=22.0.0",
@@ -32,6 +31,7 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.4",
+    "tsx": "^4.20.5",
     "typescript": "^5.9.2"
   },
   "dependencies": {

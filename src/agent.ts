@@ -88,7 +88,7 @@ export default defineAgent({
 
     const logUsage = async () => {
       const summary = usageCollector.getSummary();
-      console.log(`Usage: ${summary}`);
+      console.log(`Usage: ${JSON.stringify(summary)}`);
     };
 
     ctx.addShutdownCallback(logUsage);

@@ -61,7 +61,7 @@ export default defineAgent({
 
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all available models at https://docs.livekit.io/agents/models/stt/
-      stt: new inference.STT({ language: 'multi' }),
+      stt: 'assemblyai/universal-streaming',
 
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/

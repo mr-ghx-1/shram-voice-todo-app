@@ -4,9 +4,9 @@ import {
   WorkerOptions,
   cli,
   defineAgent,
+  inference,
   metrics,
   voice,
-  inference
 } from '@livekit/agents';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as silero from '@livekit/agents-plugin-silero';
@@ -23,7 +23,7 @@ class Assistant extends voice.Agent {
       You eagerly assist users with their questions by providing information from your extensive knowledge.
       Your responses are concise, to the point, and without any complex formatting or punctuation including emojis, asterisks, or other symbols.
       You are curious, friendly, and have a sense of humor.`,
-      
+
       // To add tools, specify `tools` in the constructor.
       // Here's an example that adds a simple weather tool.
       // You also have to add `import { llm } from '@livekit/agents' and `import { z } from 'zod'` to the top of this file
@@ -53,20 +53,20 @@ export default defineAgent({
     proc.userData.vad = await silero.VAD.load();
   },
   entry: async (ctx: JobContext) => {
-    // Set up a voice AI pipeline using OpenAI, Cartesia, Deepgram, and the LiveKit turn detector
+    // Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
     const session = new voice.AgentSession({
-      // A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
-      // See all providers at https://docs.livekit.io/agents/integrations/llm/
-      llm: 'azure/gpt-4o-mini',
-
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all available models at https://docs.livekit.io/agents/models/stt/
       stt: 'assemblyai/universal-streaming',
 
+      // A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
+      // See all providers at https://docs.livekit.io/agents/integrations/llm/
+      llm: 'azure/gpt-4o-mini',
+
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
       tts: 'cartesia/sonic-2:f786b574-daa5-4673-aa0c-cbe3e8534c02',
-      
+
       // VAD and turn detection are used to determine when the user is speaking and when the agent should respond
       // See more at https://docs.livekit.io/agents/build/turns
       turnDetection: new livekit.turnDetector.MultilingualModel(),

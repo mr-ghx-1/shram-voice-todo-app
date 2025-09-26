@@ -4,7 +4,6 @@ import {
   WorkerOptions,
   cli,
   defineAgent,
-  inference,
   metrics,
   voice,
 } from '@livekit/agents';

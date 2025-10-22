@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This is a LiveKit Agents project. LiveKit Agents is a Python SDK for building voice AI agents. This project is intended to be used with LiveKit Cloud. See @README.md for more about the rest of the LiveKit ecosystem.
+This is a LiveKit Agents project. LiveKit Agents is a Node.js SDK for building voice AI agents. This project is intended to be used with LiveKit Cloud. See @README.md for more about the rest of the LiveKit ecosystem.
 
 The following is a guide for working with this project.
 
@@ -48,7 +48,7 @@ Voice AI agents are highly sensitive to excessive latency. For this reason, it's
 
 ## Feature parity with Python SDK
 
-The Node.js SDK for LiveKit Agents has most, but not all, of the same features available in the Python SDK. You should always check the documentation for feature availability, and avoid using features that are not available in the Node.js SDK.
+The Node.js SDK for LiveKit Agents has most, but not all, of the same features available in Python SDK for LiveKit Agents. You should always check the documentation for feature availability, and avoid using features that are not available in the Node.js SDK.
 
 ## LiveKit CLI
 

@@ -7,14 +7,12 @@ import {
   metrics,
   voice,
 } from '@livekit/agents';
-import * as deepgram from '@livekit/agents-plugin-deepgram';
-import * as livekit from '@livekit/agents-plugin-livekit';
 import * as openai from '@livekit/agents-plugin-openai';
-import * as silero from '@livekit/agents-plugin-silero';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { TaskFunctionContext } from './task-function-context.js';
 import { startHealthCheckServer } from './health-check.js';
+import { playGreeting } from './greeting.js';
 
 // Load .env.local if it exists (for local development)
 // In production (Railway), environment variables are set directly
@@ -122,21 +120,15 @@ Use tools to manage tasks efficiently.`,
 
 export default defineAgent({
   prewarm: async (proc: JobProcess) => {
-    // Prewarm VAD model for faster startup with reduced sensitivity
-    // Higher activation_threshold = less sensitive to noise
-    proc.userData.vad = await silero.VAD.load({
-      minSpeechDuration: 0.3, // Minimum speech duration in seconds (default: 0.25)
-      minSilenceDuration: 0.5, // Minimum silence to consider speech ended (default: 0.3)
-      activationThreshold: 0.6, // Higher = less sensitive (default: 0.5, range: 0-1)
-    });
+    // No prewarm needed for OpenAI Realtime API
+    // The Realtime API handles VAD internally
   },
   entry: async (ctx: JobContext) => {
-    console.log('Starting voice agent for task management...');
+    console.log('Starting voice agent for task management with OpenAI Realtime API...');
     console.log('Environment check:', {
       hasLivekitUrl: !!process.env.LIVEKIT_URL,
       hasLivekitKey: !!process.env.LIVEKIT_API_KEY,
       hasOpenAI: !!process.env.OPENAI_API_KEY,
-      hasDeepgram: !!process.env.DEEPGRAM_API_KEY,
       nodeEnv: process.env.NODE_ENV,
     });
 
@@ -160,42 +152,31 @@ export default defineAgent({
       console.warn('Failed to parse metadata for timezone:', err);
     }
 
-    // Set up voice AI pipeline with Deepgram STT, OpenAI LLM, and OpenAI TTS
+    // Set up voice AI pipeline with OpenAI Realtime API
+    // This provides an all-in-one speech-to-speech solution with:
+    // - Built-in STT (speech-to-text)
+    // - LLM processing with function calling
+    // - Built-in TTS (text-to-speech)
+    // - Automatic VAD (voice activity detection)
+    // - Lower latency than separate STT/LLM/TTS pipeline
     const sessionOptions: any = {
-      // Deepgram STT - converts user speech to text
-      // Using streaming mode for real-time transcription with low latency
-      // nova-2-general provides best accuracy for conversational speech
-      stt: new deepgram.STT({
-        model: 'nova-2-general', // High-accuracy model optimized for general conversation
-        language: 'en', // English language
-        smartFormat: true, // Automatic punctuation and formatting
-        interimResults: true, // Enable streaming interim results for lower perceived latency
-      }),
-
-      // OpenAI GPT-4o mini LLM - processes commands and generates responses
-      // Optimized for low latency and cost-effective operation
-      // Function calling enables structured CRUD operations
-      llm: new openai.LLM({
-        model: 'gpt-4o-mini', // Fast, cost-effective model with function calling support
-        temperature: 0.7, // Balanced creativity for natural responses
-      }),
-
-      // OpenAI TTS - converts agent responses to speech
-      // Using streaming mode for low-latency playback
-      // tts-1 model provides good quality with low latency
-      tts: new openai.TTS({
-        model: 'tts-1', // Standard quality, optimized for latency
+      // OpenAI Realtime API - handles STT, LLM, and TTS in one model
+      // Using gpt-realtime-mini for cost-effective operation
+      llm: new openai.realtime.RealtimeModel({
+        model: 'gpt-realtime-mini', // Cost-effective realtime model
         voice: 'alloy', // Natural, friendly, gender-neutral voice
-        speed: 1.0, // Normal speaking speed
-        // Streaming is enabled by default for low-latency playback
+        temperature: 0.7, // Balanced creativity for natural responses
+        // Server VAD configuration for turn detection
+        turnDetection: {
+          type: 'server_vad',
+          threshold: 0.5, // Sensitivity to voice (0.0-1.0, higher = less sensitive)
+          prefix_padding_ms: 300, // Audio to include before speech starts
+          silence_duration_ms: 500, // Silence duration to detect speech end
+          create_response: true, // Automatically create response after user stops
+          interrupt_response: true, // Allow user to interrupt agent
+        },
       }),
-
-      // VAD and turn detection for natural conversation flow
-      turnDetection: new livekit.turnDetector.MultilingualModel(),
     };
-
-    // Add VAD from prewarm
-    sessionOptions.vad = ctx.proc.userData.vad;
 
     const session = new voice.AgentSession(sessionOptions);
 
@@ -222,22 +203,25 @@ export default defineAgent({
     // Initialize the task function context with CRUD operations
     const taskFunctionContext = new TaskFunctionContext(ctx.room);
 
+    // Join the room and connect to the user first
+    await ctx.connect();
+    console.log('Connected to room:', ctx.room.name);
+
     // Start the session with the task assistant
     await session.start({
       agent: new TaskAssistant(taskFunctionContext, userTimezone),
       room: ctx.room,
-      // Note: BackgroundVoiceCancellation disabled due to memory leak
-      // The Deepgram STT already has good noise handling
+      // Note: OpenAI Realtime API handles noise internally
     });
 
     console.log('Voice agent session started successfully');
-    console.log('STT: Deepgram nova-2-general');
-    console.log('LLM: OpenAI gpt-4o-mini');
-    console.log('TTS: OpenAI tts-1 (alloy voice)');
+    console.log('Using OpenAI Realtime API (gpt-realtime-mini)');
+    console.log('Voice: alloy (built-in STT, LLM, and TTS)');
 
-    // Join the room and connect to the user
-    await ctx.connect();
-    console.log('Connected to room:', ctx.room.name);
+    // Play greeting message after session starts
+    // This ensures the TTS pipeline is ready
+    await playGreeting(ctx, session);
+
     console.log('Agent is ready to receive voice commands');
 
     // Log when participant joins

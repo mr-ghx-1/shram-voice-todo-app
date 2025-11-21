@@ -148,7 +148,7 @@ export default defineAgent({
     }
 
     // Set up voice AI pipeline with Deepgram STT, OpenAI LLM, and OpenAI TTS
-    const session = new voice.AgentSession({
+    const sessionOptions: any = {
       // Deepgram STT - converts user speech to text
       // Using streaming mode for real-time transcription with low latency
       // nova-2-general provides best accuracy for conversational speech
@@ -179,8 +179,14 @@ export default defineAgent({
 
       // VAD and turn detection for natural conversation flow
       turnDetection: new livekit.turnDetector.MultilingualModel(),
-      vad: ctx.proc.userData.vad as silero.VAD | undefined,
-    });
+    };
+
+    // Only add VAD if it was prewarmed
+    if (ctx.proc.userData.vad) {
+      sessionOptions.vad = ctx.proc.userData.vad;
+    }
+
+    const session = new voice.AgentSession(sessionOptions);
 
     // Metrics collection for monitoring pipeline performance
     const usageCollector = new metrics.UsageCollector();

@@ -123,10 +123,7 @@ Use tools to manage tasks efficiently.`,
 export default defineAgent({
   prewarm: async (proc: JobProcess) => {
     // Prewarm VAD model for faster startup
-    // Skip in production to avoid timeout - will load on first use
-    if (process.env.NODE_ENV !== 'production') {
-      proc.userData.vad = await silero.VAD.load();
-    }
+    proc.userData.vad = await silero.VAD.load();
   },
   entry: async (ctx: JobContext) => {
     console.log('Starting voice agent for task management...');
@@ -192,10 +189,8 @@ export default defineAgent({
       turnDetection: new livekit.turnDetector.MultilingualModel(),
     };
 
-    // Only add VAD if it was prewarmed
-    if (ctx.proc.userData.vad) {
-      sessionOptions.vad = ctx.proc.userData.vad;
-    }
+    // Add VAD from prewarm
+    sessionOptions.vad = ctx.proc.userData.vad;
 
     const session = new voice.AgentSession(sessionOptions);
 

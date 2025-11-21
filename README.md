@@ -64,6 +64,11 @@ Sign up for [LiveKit Cloud](https://cloud.livekit.io/) then set up the environme
 - `LIVEKIT_URL`
 - `LIVEKIT_API_KEY`
 - `LIVEKIT_API_SECRET`
+- `OPENAI_API_KEY`
+- `DEEPGRAM_API_KEY`
+- `API_BASE_URL`
+
+**For detailed setup instructions, see [SETUP.md](./SETUP.md)**
 
 You can load the LiveKit environment automatically using the [LiveKit CLI](https://docs.livekit.io/home/cli/cli-setup):
 
@@ -91,6 +96,10 @@ In production, use the `start` command:
 ```console
 pnpm run start
 ```
+
+## Deployment
+
+This project includes deployment configurations for Railway and Render. See [SETUP.md](./SETUP.md#deployment) for detailed deployment instructions.
 
 ## Frontend & Telephony
 

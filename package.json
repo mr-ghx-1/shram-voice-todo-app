@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "rm -rf dist",
+    "cleanup": "tsx src/cleanup.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"**/*.{ts,js}\"",
     "lint:fix": "eslint --fix \"**/*.{ts,js}\"",
@@ -34,10 +35,13 @@
   },
   "dependencies": {
     "@livekit/agents": "^1.0.11",
+    "@livekit/agents-plugin-deepgram": "^1.0.19",
     "@livekit/agents-plugin-livekit": "^1.0.11",
+    "@livekit/agents-plugin-openai": "^1.0.19",
     "@livekit/agents-plugin-silero": "^1.0.11",
     "@livekit/noise-cancellation-node": "^0.1.9",
     "dotenv": "^17.2.3",
+    "livekit-server-sdk": "^2.14.2",
     "zod": "^3.25.76"
   }
 }

@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: voice-todo-agent
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
+      - key: API_BASE_URL
+        sync: false
+      - key: HEALTH_CHECK_PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production

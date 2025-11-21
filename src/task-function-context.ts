@@ -2,6 +2,7 @@ import { llm } from '@livekit/agents';
 import { z } from 'zod';
 import { withRetry, formatErrorForTTS } from './retry-utils.js';
 import { parseNaturalDate } from './date-parser.js';
+import { parsePriority, formatPriority } from './priority-mapper.js';
 
 /**
  * Task interface matching the Next.js API response
@@ -190,29 +191,27 @@ export class TaskFunctionContext {
    * Create a new task tool
    */
   create_task = llm.tool({
-    description: 'Create a task',
+    description: 'Create a task. Priority can be specified using keywords (low, normal, high, urgent, critical) or numbers 1-5.',
     parameters: z.object({
       title: z.string().describe('Task title'),
       scheduled_time: z
         .string()
         .nullish()
         .describe('When due (e.g., "tomorrow", "next Monday", ISO 8601)'),
-      priority_index: z
-        .number()
-        .min(1)
-        .max(5)
+      priority: z
+        .union([z.string(), z.number()])
         .nullish()
-        .describe('Priority 1-5 (1=low, 5=high)'),
+        .describe('Priority keyword (low, normal, high, urgent, critical) or number 1-5 (1=low, 5=critical)'),
       tags: z
         .array(z.string())
         .nullish()
         .describe('Tags array'),
     }),
-    execute: async ({ title, scheduled_time, priority_index, tags }) => {
+    execute: async ({ title, scheduled_time, priority, tags }) => {
       try {
         console.log(`Creating task: "${title}"`, {
           scheduled_time,
-          priority_index,
+          priority,
           tags,
         });
 
@@ -234,11 +233,18 @@ export class TaskFunctionContext {
           }
         }
         
-        // Set priority - default to 1 (lowest) if not specified
-        if (priority_index !== undefined && priority_index !== null) {
-          body.priority_index = priority_index;
+        // Parse priority keyword or number to numeric value
+        const priorityValue = parsePriority(priority);
+        if (priorityValue !== null) {
+          body.priority_index = priorityValue;
+          console.log(`Parsed priority "${priority}" to ${priorityValue}`);
+        } else if (priority !== undefined && priority !== null) {
+          // Invalid priority provided
+          console.warn(`Invalid priority value: "${priority}"`);
+          return `I couldn't understand the priority "${priority}". Please use low, normal, high, urgent, critical, or a number from 1 to 5.`;
         } else {
-          body.priority_index = 1; // Default to lowest priority
+          // Default to 1 (lowest) if not specified
+          body.priority_index = 1;
           console.log('No priority specified, defaulting to 1 (lowest)');
         }
         
@@ -269,7 +275,8 @@ export class TaskFunctionContext {
         }
         
         if (task.priority_index) {
-          message += ` with priority ${task.priority_index}`;
+          const priorityLabel = formatPriority(task.priority_index);
+          message += ` with ${priorityLabel.toLowerCase()} priority`;
         }
 
         return message;
@@ -317,15 +324,13 @@ export class TaskFunctionContext {
    * Get tasks tool
    */
   get_tasks = llm.tool({
-    description: 'Retrieve and list all tasks or search for specific tasks. Use this when the user asks to see their tasks, show tasks, list tasks, or get tasks.',
+    description: 'Retrieve and list all tasks or search for specific tasks. Use this when the user asks to see their tasks, show tasks, list tasks, or get tasks. Priority can be specified using keywords (low, normal, high, urgent, critical) or numbers 1-5.',
     parameters: z.object({
       query: z.string().nullish().describe('Search by title'),
       priority: z
-        .number()
-        .min(1)
-        .max(5)
+        .union([z.string(), z.number()])
         .nullish()
-        .describe('Filter by priority 1-5'),
+        .describe('Filter by priority keyword (low, normal, high, urgent, critical) or number 1-5'),
       scheduled: z.string().nullish().describe('Filter by date (ISO 8601)'),
     }),
     execute: async ({ query, priority, scheduled }) => {
@@ -339,8 +344,15 @@ export class TaskFunctionContext {
           params.append('query', query);
         }
         
-        if (priority !== undefined && priority !== null) {
-          params.append('priority', priority.toString());
+        // Parse priority keyword or number to numeric value
+        const priorityValue = parsePriority(priority);
+        if (priorityValue !== null) {
+          params.append('priority', priorityValue.toString());
+          console.log(`Parsed priority filter "${priority}" to ${priorityValue}`);
+        } else if (priority !== undefined && priority !== null) {
+          // Invalid priority provided
+          console.warn(`Invalid priority filter: "${priority}"`);
+          return `I couldn't understand the priority "${priority}". Please use low, normal, high, urgent, critical, or a number from 1 to 5.`;
         }
         
         if (scheduled) {
@@ -354,10 +366,10 @@ export class TaskFunctionContext {
 
         console.log(`Retrieved ${tasks.length} tasks`);
 
-        // Notify frontend to apply filters
+        // Notify frontend to apply filters (use parsed priority value)
         await this.sendDataToFrontend({
           type: 'APPLY_FILTERS',
-          payload: { query, priority, scheduled }
+          payload: { query, priority: priorityValue, scheduled }
         });
 
         // Handle empty results
@@ -378,7 +390,8 @@ export class TaskFunctionContext {
           }
           
           if (task.priority_index) {
-            description += ` priority ${task.priority_index}`;
+            const priorityLabel = formatPriority(task.priority_index);
+            description += ` ${priorityLabel.toLowerCase()} priority`;
           }
           
           if (task.completed) {
@@ -408,27 +421,25 @@ export class TaskFunctionContext {
    * Update task tool
    */
   update_task = llm.tool({
-    description: 'Update task by number or title',
+    description: 'Update task by number or title. Priority can be specified using keywords (low, normal, high, urgent, critical) or numbers 1-5.',
     parameters: z.object({
       identifier: z
         .string()
         .describe('Task number (e.g., "4th") or title substring'),
       title: z.string().nullish().describe('New title'),
       scheduled_time: z.string().nullish().describe('New date (e.g., "tomorrow", ISO 8601)'),
-      priority_index: z
-        .number()
-        .min(1)
-        .max(5)
+      priority: z
+        .union([z.string(), z.number()])
         .nullish()
-        .describe('New priority 1-5'),
+        .describe('New priority keyword (low, normal, high, urgent, critical) or number 1-5'),
       completed: z.boolean().nullish().describe('Completion status'),
     }),
-    execute: async ({ identifier, title, scheduled_time, priority_index, completed }) => {
+    execute: async ({ identifier, title, scheduled_time, priority, completed }) => {
       try {
         console.log(`Updating task: "${identifier}"`, {
           title,
           scheduled_time,
-          priority_index,
+          priority,
           completed,
         });
 
@@ -457,8 +468,17 @@ export class TaskFunctionContext {
           }
         }
         
-        if (priority_index !== undefined && priority_index !== null) {
-          body.priority_index = priority_index;
+        // Parse priority keyword or number to numeric value
+        if (priority !== undefined && priority !== null) {
+          const priorityValue = parsePriority(priority);
+          if (priorityValue !== null) {
+            body.priority_index = priorityValue;
+            console.log(`Parsed priority "${priority}" to ${priorityValue}`);
+          } else {
+            // Invalid priority provided
+            console.warn(`Invalid priority value: "${priority}"`);
+            return `I couldn't understand the priority "${priority}". Please use low, normal, high, urgent, critical, or a number from 1 to 5.`;
+          }
         }
         
         if (completed !== undefined && completed !== null) {
@@ -498,8 +518,9 @@ export class TaskFunctionContext {
           updates.push(`rescheduled to ${this.formatDate(date)}`);
         }
         
-        if (priority_index !== undefined) {
-          updates.push(`priority set to ${task.priority_index}`);
+        if (priority !== undefined && task.priority_index) {
+          const priorityLabel = formatPriority(task.priority_index);
+          updates.push(`priority set to ${priorityLabel.toLowerCase()}`);
         }
         
         if (completed !== undefined) {

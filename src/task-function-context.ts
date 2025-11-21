@@ -27,6 +27,7 @@ export class TaskFunctionContext {
   private apiBaseUrl: string;
   private room: any; // LiveKit Room instance
   private currentFilter: { query?: string; priority?: number; scheduled?: string } | null = null;
+  private lastFetchedTasks: Task[] = [];
 
   constructor(room?: any) {
     // Get API base URL from environment variable
@@ -105,6 +106,7 @@ export class TaskFunctionContext {
   /**
    * Resolve a task identifier to a task ID
    * Handles both ordinal references (e.g., "4th", "fourth") and semantic matching
+   * Context-aware: uses filtered tasks when available
    * 
    * @param identifier - Task identifier (ordinal or title substring)
    * @returns Task ID
@@ -113,13 +115,31 @@ export class TaskFunctionContext {
   private async resolveTaskIdentifier(identifier: string): Promise<string> {
     console.log(`Resolving task identifier: "${identifier}"`);
 
+    // Use filtered tasks if available, otherwise get all tasks
+    const tasks = this.lastFetchedTasks.length > 0 ? this.lastFetchedTasks : await this.getAllTasks();
+    const usingFilteredTasks = this.lastFetchedTasks.length > 0;
+    
+    console.log(`Using ${usingFilteredTasks ? 'filtered' : 'all'} tasks (${tasks.length} tasks)`);
+
+    // Special case: if only one task is visible and identifier is vague (like "task", "the task", "it")
+    const vagueIdentifiers = [
+      'task', 'the task', 'this task', 'that task', 
+      'it', 'this', 'that', 'this one', 'that one',
+      'the date', 'date', 'time', 'the time'
+    ];
+    if (tasks.length === 1 && vagueIdentifiers.includes(identifier.toLowerCase().trim())) {
+      const task = tasks[0];
+      if (task) {
+        console.log(`Only one task visible, resolving vague identifier "${identifier}" to: ${task.id} - "${task.title}"`);
+        return task.id;
+      }
+    }
+
     // Parse plain numbers (e.g., "1", "2", "3")
     const plainNumberMatch = identifier.match(/^\d+$/);
     if (plainNumberMatch) {
       const index = parseInt(identifier, 10) - 1; // Convert to 0-based index
       console.log(`Parsed plain number reference: position ${index + 1}`);
-      
-      const tasks = await this.getAllTasks();
       
       if (index < 0 || index >= tasks.length) {
         throw new Error(`Task number ${index + 1} doesn't exist. You have ${tasks.length} task${tasks.length === 1 ? '' : 's'}.`);
@@ -140,8 +160,6 @@ export class TaskFunctionContext {
       const index = parseInt(ordinalMatch[1], 10) - 1; // Convert to 0-based index
       console.log(`Parsed ordinal reference: position ${index + 1}`);
       
-      const tasks = await this.getAllTasks();
-      
       if (index < 0 || index >= tasks.length) {
         throw new Error(`Task number ${index + 1} doesn't exist. You have ${tasks.length} task${tasks.length === 1 ? '' : 's'}.`);
       }
@@ -156,7 +174,6 @@ export class TaskFunctionContext {
 
     // Handle semantic matching using title substring search
     console.log('Attempting semantic matching on task titles');
-    const tasks = await this.getAllTasks();
     const lowerIdentifier = identifier.toLowerCase();
     
     const matches = tasks.filter((task) =>
@@ -369,6 +386,9 @@ export class TaskFunctionContext {
         const tasks: Task[] = await response.json();
 
         console.log(`Retrieved ${tasks.length} tasks`);
+
+        // Store fetched tasks for context awareness
+        this.lastFetchedTasks = tasks;
 
         // Store current filter for later use
         this.currentFilter = {};

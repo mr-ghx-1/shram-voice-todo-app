@@ -122,8 +122,13 @@ Use tools to manage tasks efficiently.`,
 
 export default defineAgent({
   prewarm: async (proc: JobProcess) => {
-    // Prewarm VAD model for faster startup
-    proc.userData.vad = await silero.VAD.load();
+    // Prewarm VAD model for faster startup with reduced sensitivity
+    // Higher activation_threshold = less sensitive to noise
+    proc.userData.vad = await silero.VAD.load({
+      minSpeechDuration: 0.3, // Minimum speech duration in seconds (default: 0.25)
+      minSilenceDuration: 0.5, // Minimum silence to consider speech ended (default: 0.3)
+      activationThreshold: 0.6, // Higher = less sensitive (default: 0.5, range: 0-1)
+    });
   },
   entry: async (ctx: JobContext) => {
     console.log('Starting voice agent for task management...');

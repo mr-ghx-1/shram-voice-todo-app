@@ -16,7 +16,11 @@ import { fileURLToPath } from 'node:url';
 import { TaskFunctionContext } from './task-function-context.js';
 import { startHealthCheckServer } from './health-check.js';
 
-dotenv.config({ path: '.env.local' });
+// Load .env.local if it exists (for local development)
+// In production (Railway), environment variables are set directly
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: '.env.local' });
+}
 
 // Start health check server only in the main worker process, not in job processes
 // Check if this is the main process by looking for the worker mode
@@ -126,6 +130,13 @@ export default defineAgent({
   },
   entry: async (ctx: JobContext) => {
     console.log('Starting voice agent for task management...');
+    console.log('Environment check:', {
+      hasLivekitUrl: !!process.env.LIVEKIT_URL,
+      hasLivekitKey: !!process.env.LIVEKIT_API_KEY,
+      hasOpenAI: !!process.env.OPENAI_API_KEY,
+      hasDeepgram: !!process.env.DEEPGRAM_API_KEY,
+      nodeEnv: process.env.NODE_ENV,
+    });
 
     // Extract timezone from job metadata (passed during dispatch)
     let userTimezone = 'UTC';

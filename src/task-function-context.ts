@@ -266,20 +266,8 @@ export class TaskFunctionContext {
         // Notify frontend to refresh tasks
         await this.sendDataToFrontend({ type: 'TASK_CREATED' });
 
-        // Format success response for TTS
-        let message = `Created task: ${task.title}`;
-        
-        if (task.scheduled_time) {
-          const date = new Date(task.scheduled_time);
-          message += ` scheduled for ${this.formatDate(date)}`;
-        }
-        
-        if (task.priority_index) {
-          const priorityLabel = formatPriority(task.priority_index);
-          message += ` with ${priorityLabel.toLowerCase()} priority`;
-        }
-
-        return message;
+        // Format success response for TTS (minimal)
+        return 'Task created';
       } catch (error) {
         console.error('Error creating task:', error);
         
@@ -287,7 +275,7 @@ export class TaskFunctionContext {
           return formatErrorForTTS(error, 'create that task');
         }
         
-        return "I couldn't create that task. Please try again.";
+        return "Couldn't create task";
       }
     },
   });
@@ -375,36 +363,13 @@ export class TaskFunctionContext {
         // Handle empty results
         if (tasks.length === 0) {
           if (query || priority || scheduled) {
-            return "You have no tasks matching that criteria.";
+            return "No tasks found";
           }
-          return "You have no tasks. Your to-do list is empty.";
+          return "No tasks";
         }
 
-        // Format tasks for TTS (numbered list with due dates)
-        const taskDescriptions = tasks.map((task, index) => {
-          let description = `${index + 1}. ${task.title}`;
-          
-          if (task.scheduled_time) {
-            const date = new Date(task.scheduled_time);
-            description += ` due ${this.formatDate(date)}`;
-          }
-          
-          if (task.priority_index) {
-            const priorityLabel = formatPriority(task.priority_index);
-            description += ` ${priorityLabel.toLowerCase()} priority`;
-          }
-          
-          if (task.completed) {
-            description += ' completed';
-          }
-          
-          return description;
-        });
-
-        // Join with periods for natural speech
-        const message = `You have ${tasks.length} task${tasks.length === 1 ? '' : 's'}. ${taskDescriptions.join('. ')}.`;
-        
-        return message;
+        // Minimal response - tasks are shown on screen
+        return `Found ${tasks.length} task${tasks.length === 1 ? '' : 's'}`;
       } catch (error) {
         console.error('Error fetching tasks:', error);
         
@@ -412,7 +377,7 @@ export class TaskFunctionContext {
           return formatErrorForTTS(error, 'retrieve your tasks');
         }
         
-        return "I couldn't retrieve your tasks. Please try again.";
+        return "Couldn't get tasks";
       }
     },
   });
@@ -504,34 +469,12 @@ export class TaskFunctionContext {
         // Notify frontend to refresh tasks
         await this.sendDataToFrontend({ type: 'TASK_UPDATED' });
 
-        // Format success response for TTS
-        let message = `Updated task: ${task.title}`;
-        
-        const updates: string[] = [];
-        
-        if (title !== undefined) {
-          updates.push('title changed');
-        }
-        
-        if (scheduled_time !== undefined && task.scheduled_time) {
-          const date = new Date(task.scheduled_time);
-          updates.push(`rescheduled to ${this.formatDate(date)}`);
-        }
-        
-        if (priority !== undefined && task.priority_index) {
-          const priorityLabel = formatPriority(task.priority_index);
-          updates.push(`priority set to ${priorityLabel.toLowerCase()}`);
-        }
-        
+        // Format success response for TTS (minimal)
         if (completed !== undefined) {
-          updates.push(task.completed ? 'marked as complete' : 'marked as incomplete');
+          return task.completed ? 'Marked complete' : 'Marked incomplete';
         }
         
-        if (updates.length > 0) {
-          message += `. ${updates.join(', ')}`;
-        }
-
-        return message;
+        return 'Updated';
       } catch (error) {
         console.error('Error updating task:', error);
         
@@ -550,7 +493,7 @@ export class TaskFunctionContext {
           return formatErrorForTTS(error, 'update that task');
         }
         
-        return "I couldn't update that task. Please try again.";
+        return "Couldn't update task";
       }
     },
   });
@@ -585,8 +528,8 @@ export class TaskFunctionContext {
         // Notify frontend to refresh tasks
         await this.sendDataToFrontend({ type: 'TASK_DELETED' });
 
-        // Format success response for TTS
-        return `Deleted task: ${task.title}`;
+        // Format success response for TTS (minimal)
+        return 'Deleted';
       } catch (error) {
         console.error('Error deleting task:', error);
         
@@ -605,7 +548,7 @@ export class TaskFunctionContext {
           return formatErrorForTTS(error, 'delete that task');
         }
         
-        return "I couldn't delete that task. Please try again.";
+        return "Couldn't delete task";
       }
     },
   });

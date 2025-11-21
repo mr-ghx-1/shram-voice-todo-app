@@ -26,6 +26,7 @@ interface Task {
 export class TaskFunctionContext {
   private apiBaseUrl: string;
   private room: any; // LiveKit Room instance
+  private currentFilter: { query?: string; priority?: number; scheduled?: string } | null = null;
 
   constructor(room?: any) {
     // Get API base URL from environment variable
@@ -263,8 +264,15 @@ export class TaskFunctionContext {
         
         console.log(`Task created successfully: ${task.id}`);
 
-        // Notify frontend to refresh tasks
-        await this.sendDataToFrontend({ type: 'TASK_CREATED' });
+        // Notify frontend to refresh tasks with current filter
+        if (this.currentFilter) {
+          await this.sendDataToFrontend({
+            type: 'APPLY_FILTERS',
+            payload: this.currentFilter
+          });
+        } else {
+          await this.sendDataToFrontend({ type: 'TASK_CREATED' });
+        }
 
         // Format success response for TTS (minimal)
         return 'Task created';
@@ -361,6 +369,22 @@ export class TaskFunctionContext {
         const tasks: Task[] = await response.json();
 
         console.log(`Retrieved ${tasks.length} tasks`);
+
+        // Store current filter for later use
+        this.currentFilter = {};
+        if (query) this.currentFilter.query = query;
+        if (priorityValue !== null) this.currentFilter.priority = priorityValue;
+        if (scheduled && scheduled !== 'all' && scheduled.trim() !== '') {
+          const isoDateRegex = /^\d{4}-\d{2}-\d{2}/;
+          if (isoDateRegex.test(scheduled)) {
+            this.currentFilter.scheduled = scheduled;
+          }
+        }
+        
+        // If no filters, clear the stored filter
+        if (Object.keys(this.currentFilter).length === 0) {
+          this.currentFilter = null;
+        }
 
         // Notify frontend to apply filters (use parsed priority value)
         await this.sendDataToFrontend({
@@ -474,8 +498,15 @@ export class TaskFunctionContext {
         
         console.log(`Task updated successfully: ${task.id}`);
 
-        // Notify frontend to refresh tasks
-        await this.sendDataToFrontend({ type: 'TASK_UPDATED' });
+        // Notify frontend to refresh tasks with current filter
+        if (this.currentFilter) {
+          await this.sendDataToFrontend({
+            type: 'APPLY_FILTERS',
+            payload: this.currentFilter
+          });
+        } else {
+          await this.sendDataToFrontend({ type: 'TASK_UPDATED' });
+        }
 
         // Format success response for TTS (minimal)
         if (completed !== undefined) {
@@ -533,8 +564,15 @@ export class TaskFunctionContext {
         
         console.log(`Task deleted successfully: ${task.id}`);
 
-        // Notify frontend to refresh tasks
-        await this.sendDataToFrontend({ type: 'TASK_DELETED' });
+        // Notify frontend to refresh tasks with current filter
+        if (this.currentFilter) {
+          await this.sendDataToFrontend({
+            type: 'APPLY_FILTERS',
+            payload: this.currentFilter
+          });
+        } else {
+          await this.sendDataToFrontend({ type: 'TASK_DELETED' });
+        }
 
         // Format success response for TTS (minimal)
         return 'Deleted';

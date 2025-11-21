@@ -1,7 +1,7 @@
 import { llm } from '@livekit/agents';
 import { z } from 'zod';
-import { withRetry, formatErrorForTTS } from './retry-utils';
-import { parseNaturalDate } from './date-parser';
+import { withRetry, formatErrorForTTS } from './retry-utils.js';
+import { parseNaturalDate } from './date-parser.js';
 
 /**
  * Task interface matching the Next.js API response

@@ -119,7 +119,10 @@ Use tools to manage tasks efficiently.`,
 export default defineAgent({
   prewarm: async (proc: JobProcess) => {
     // Prewarm VAD model for faster startup
-    proc.userData.vad = await silero.VAD.load();
+    // Skip in production to avoid timeout - will load on first use
+    if (process.env.NODE_ENV !== 'production') {
+      proc.userData.vad = await silero.VAD.load();
+    }
   },
   entry: async (ctx: JobContext) => {
     console.log('Starting voice agent for task management...');
@@ -176,7 +179,7 @@ export default defineAgent({
 
       // VAD and turn detection for natural conversation flow
       turnDetection: new livekit.turnDetector.MultilingualModel(),
-      vad: ctx.proc.userData.vad! as silero.VAD,
+      vad: ctx.proc.userData.vad as silero.VAD | undefined,
     });
 
     // Metrics collection for monitoring pipeline performance

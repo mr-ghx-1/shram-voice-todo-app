@@ -312,14 +312,14 @@ export class TaskFunctionContext {
    * Get tasks tool
    */
   get_tasks = llm.tool({
-    description: 'Retrieve and list all tasks or search for specific tasks. Use this when the user asks to see their tasks, show tasks, list tasks, or get tasks. Priority can be specified using keywords (low, normal, high, urgent, critical) or numbers 1-5.',
+    description: 'Retrieve and list all tasks or search for specific tasks. Use this when the user asks to see their tasks, show tasks, list tasks, or get tasks. Priority can be specified using keywords (low, normal, high, urgent, critical) or numbers 1-5. Leave all parameters empty/null to get all tasks.',
     parameters: z.object({
-      query: z.string().nullish().describe('Search by title'),
+      query: z.string().nullish().describe('Search by title (leave empty for all tasks)'),
       priority: z
         .union([z.string(), z.number()])
         .nullish()
-        .describe('Filter by priority keyword (low, normal, high, urgent, critical) or number 1-5'),
-      scheduled: z.string().nullish().describe('Filter by date (ISO 8601)'),
+        .describe('Filter by priority keyword (low, normal, high, urgent, critical) or number 1-5 (leave empty for all priorities)'),
+      scheduled: z.string().nullish().describe('Filter by specific date in ISO 8601 format (e.g., "2024-12-25"). Leave empty to get tasks with any or no scheduled date.'),
     }),
     execute: async ({ query, priority, scheduled }) => {
       try {
@@ -343,8 +343,16 @@ export class TaskFunctionContext {
           return `I couldn't understand the priority "${priority}". Please use low, normal, high, urgent, critical, or a number from 1 to 5.`;
         }
         
-        if (scheduled) {
-          params.append('scheduled', scheduled);
+        // Only add scheduled parameter if it's a valid ISO 8601 date
+        // Ignore values like "all" or empty strings
+        if (scheduled && scheduled !== 'all' && scheduled.trim() !== '') {
+          // Basic validation for ISO 8601 format
+          const isoDateRegex = /^\d{4}-\d{2}-\d{2}/;
+          if (isoDateRegex.test(scheduled)) {
+            params.append('scheduled', scheduled);
+          } else {
+            console.warn(`Invalid scheduled date format: "${scheduled}"`);
+          }
         }
 
         // Call Next.js API

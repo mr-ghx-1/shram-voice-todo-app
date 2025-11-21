@@ -12,7 +12,6 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { TaskFunctionContext } from './task-function-context.js';
 import { startHealthCheckServer } from './health-check.js';
-import { playGreeting } from './greeting.js';
 
 // Load .env.local if it exists (for local development)
 // In production (Railway), environment variables are set directly
@@ -230,9 +229,9 @@ export default defineAgent({
     console.log('Using OpenAI Realtime API (gpt-realtime-mini)');
     console.log('Voice: alloy (built-in STT, LLM, and TTS)');
 
-    // Play greeting message after session starts
-    // This ensures the TTS pipeline is ready
-    await playGreeting(ctx, session);
+    // Note: Greeting disabled for Realtime API
+    // The Realtime API doesn't support session.say() for programmatic speech
+    // The agent will respond naturally when the user speaks first
 
     console.log('Agent is ready to receive voice commands');
 
